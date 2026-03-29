@@ -55,12 +55,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <!-- Question Form -->
     <div class="max-w-lg">
       <div class="glass p-6">
-        <h2 class="text-base font-semibold text-white mb-1">Send a question</h2>
-        <p class="text-sm text-surface-200/80 mb-5">Great questions get answered publicly. I'll credit you or keep it anonymous. Your call.</p>
+        <h2 class="text-base font-semibold text-white mb-1">Send me a message</h2>
+        <p class="text-sm text-surface-200/80 mb-5">Got a question, idea, or just want to say hi? Fire away.</p>
 
         <form id="ask-form" class="space-y-4">
           <!-- Honeypot -->
           <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" />
+          <!-- Timestamp for spam detection -->
+          <input type="hidden" name="ts" id="form-ts" value="" />
 
           <div>
             <label for="name" class="block text-sm font-medium text-surface-200/80 mb-1">
@@ -77,52 +79,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           <div>
             <label for="question" class="block text-sm font-medium text-surface-200/80 mb-1">
-              Your question
+              Your message
             </label>
             <textarea
               id="question"
               name="question"
               required
               rows="4"
-              placeholder="What do you want to know?"
+              placeholder="What's on your mind?"
               class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-colors resize-none"
             ></textarea>
-          </div>
-
-          <div>
-            <label for="topic" class="block text-sm font-medium text-surface-200/80 mb-1">
-              Topic
-            </label>
-            <select
-              id="topic"
-              name="topic"
-              class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-colors"
-            >
-              <option value="ai">AI</option>
-              <option value="product">Product</option>
-              <option value="career">Career</option>
-              <option value="tools">Tools</option>
-              <option value="other">Other</option>
-            </select>
           </div>
 
           <button
             type="submit"
             class="w-full px-6 py-2.5 rounded-lg bg-blue-500 text-white font-medium text-sm hover:bg-blue-400 transition-colors"
           >
-            Send Question
+            Send Message
           </button>
         </form>
 
         <div id="ask-success" class="hidden text-center py-8">
-          <p class="text-lg font-medium text-white mb-2">Question received!</p>
-          <p class="text-sm text-surface-200">If it's a great one, I'll answer it publicly. Check the <a href="/ask/archive" class="text-blue-400 hover:text-blue-300">archive</a> for past answers.</p>
+          <p class="text-lg font-medium text-white mb-2">Message sent!</p>
+          <p class="text-sm text-surface-200">Thanks for reaching out. I'll get back to you if a reply makes sense.</p>
         </div>
       </div>
     </div>
   </div>
 
   <script is:inline>
+    // Set timestamp on page load for spam detection
+    document.getElementById('form-ts').value = Date.now().toString();
+
     document.getElementById('ask-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -140,8 +128,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           body: JSON.stringify({
             name: form.name.value,
             question: form.question.value,
-            topic: form.topic.value,
             website: form.website.value,
+            ts: form.ts.value,
           }),
         });
 
