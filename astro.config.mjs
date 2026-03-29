@@ -6,9 +6,7 @@ import vercel from '@astrojs/vercel/serverless';
 export default defineConfig({
   site: 'https://davidkenworthy.ai',
   output: 'hybrid',
-  adapter: vercel({
-    runtime: 'nodejs20.x',
-  }),
+  adapter: vercel(),
   integrations: [
     mdx(),
     tailwind(),
