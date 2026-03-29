@@ -123,12 +123,41 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
 
   <script is:inline>
-    document.getElementById('ask-form')?.addEventListener('submit', (e) => {
+    document.getElementById('ask-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
       if (form.website.value) return;
-      form.style.display = 'none';
-      document.getElementById('ask-success').classList.remove('hidden');
+
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name.value,
+            question: form.question.value,
+            topic: form.topic.value,
+            website: form.website.value,
+          }),
+        });
+
+        if (res.ok) {
+          form.style.display = 'none';
+          document.getElementById('ask-success').classList.remove('hidden');
+        } else {
+          btn.textContent = 'Failed - try again';
+          btn.disabled = false;
+          setTimeout(() => { btn.textContent = originalText; }, 2000);
+        }
+      } catch (err) {
+        btn.textContent = 'Failed - try again';
+        btn.disabled = false;
+        setTimeout(() => { btn.textContent = originalText; }, 2000);
+      }
     });
   </script>
 </BaseLayout>
