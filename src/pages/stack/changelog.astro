@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import changelogData from '../../content/stack/changelog.json';
+
+const changeTypeIcon: Record<string, { icon: string; color: string }> = {
+  added: { icon: '+', color: 'text-emerald-400' },
+  dropped: { icon: '-', color: 'text-red-400' },
+  changed: { icon: '~', color: 'text-amber-400' },
+};
+---
+
+<BaseLayout title="Stack Changelog - dk.ai" description="The full history of every tool added, dropped, or reconsidered.">
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <a href="/stack" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors">&larr; Back to Stack</a>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-2">Stack Changelog</h1>
+      <p class="text-lg text-surface-200">The full history of every tool added, dropped, or reconsidered.</p>
+    </div>
+
+    <div class="relative">
+      <!-- Timeline line -->
+      <div class="absolute left-4 top-0 bottom-0 w-px bg-white/10"></div>
+
+      <div class="space-y-10">
+        {changelogData.map((version) => {
+          const date = new Date(version.date + 'T12:00:00').toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+          return (
+            <div class="relative pl-12">
+              <div class="absolute left-2.5 top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-surface-900"></div>
+              <div class="glass p-5">
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="font-mono text-lg font-semibold text-amber-400">v{version.version}</span>
+                  <span class="text-sm text-surface-200/70">{date}</span>
+                </div>
+                <div class="space-y-3">
+                  {version.changes.map((change) => {
+                    const ct = changeTypeIcon[change.type] || changeTypeIcon.changed;
+                    return (
+                      <div class="flex items-start gap-3">
+                        <span class:list={['font-mono font-bold text-sm w-4 text-center shrink-0', ct.color]}>
+                          {ct.icon}
+                        </span>
+                        <div>
+                          <span class="font-medium text-white">{change.tool}</span>
+                          <p class="text-sm text-surface-200 mt-0.5">{change.reason}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

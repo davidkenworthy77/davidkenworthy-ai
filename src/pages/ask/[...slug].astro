@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const questions = await getCollection('ask');
+  return questions.map((q) => ({
+    params: { slug: q.slug },
+    props: { question: q },
+  }));
+}
+
+interface Props {
+  question: CollectionEntry<'ask'>;
+}
+
+const { question } = Astro.props;
+const { Content } = await question.render();
+---
+
+<BaseLayout title={`${question.data.question} - Ask Me - dk.ai`}>
+  <article class="max-w-reading mx-auto">
+    <header class="mb-8">
+      <a href="/ask/archive" class="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-4 inline-block">
+        &larr; Back to archive
+      </a>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white mb-3">{question.data.question}</h1>
+      <div class="flex items-center gap-3 text-sm text-surface-200/80">
+        <span>Asked by {question.data.askedBy}</span>
+        <span class="font-mono">
+          {question.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </span>
+      </div>
+    </header>
+
+    <div class="prose prose-invert prose-lg max-w-none">
+      <Content />
+    </div>
+
+    <div class="mt-10 pt-8 border-t border-white/5 text-center">
+      <p class="text-surface-200 mb-3">Got your own question?</p>
+      <a href="/ask" class="inline-flex px-5 py-2 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-400 transition-colors">
+        Connect
+      </a>
+    </div>
+  </article>
+</BaseLayout>

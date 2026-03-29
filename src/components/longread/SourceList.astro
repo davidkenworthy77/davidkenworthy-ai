@@ -1,0 +1,50 @@
+---
+interface Source {
+  title: string;
+  publication: string;
+  url: string;
+  description?: string;
+}
+
+interface Props {
+  sources: Source[];
+}
+
+const { sources } = Astro.props;
+---
+
+<div class="not-prose" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+  <h2 style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <svg style="width: 1rem; height: 1rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+    Sources & Further Reading
+  </h2>
+  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    {sources.map((source) => (
+      <a href={source.url} target="_blank" rel="noopener noreferrer" class="source-link" style="display: flex; align-items: flex-start; gap: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; transition: all 0.2s; text-decoration: none;">
+        <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.125rem;">
+          <svg style="width: 1rem; height: 1rem; color: #3b82f6;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <p style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary); margin: 0;">{source.title}</p>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0.125rem 0 0 0;">{source.publication}</p>
+          {source.description && <p style="font-size: 0.75rem; color: var(--text-faint); margin: 0.25rem 0 0 0; line-height: 1.5;">{source.description}</p>}
+        </div>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .source-link:hover {
+    background: var(--bg-card-hover) !important;
+    border-color: var(--border-color-hover) !important;
+  }
+
+  .source-link:hover p:first-child {
+    color: #3b82f6 !important;
+  }
+</style>

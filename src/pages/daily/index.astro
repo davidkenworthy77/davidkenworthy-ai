@@ -1,0 +1,143 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { fetchOgImage } from '../../utils/og';
+
+const posts = (await getCollection('daily', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Fetch OG images for link posts that don't already have a linkImage
+const ogImages = new Map<string, string | undefined>();
+await Promise.all(
+  posts
+    .filter((p) => p.data.link && p.data.linkTitle && !p.data.linkImage)
+    .map(async (p) => {
+      const img = await fetchOgImage(p.data.link!);
+      if (img) ogImages.set(p.slug, img);
+    })
+);
+
+// Group posts by date
+const grouped = posts.reduce((acc, post) => {
+  const dateKey = post.data.date.toISOString().split('T')[0];
+  if (!acc[dateKey]) acc[dateKey] = [];
+  acc[dateKey].push(post);
+  return acc;
+}, {} as Record<string, typeof posts>);
+
+const subtypeIcons: Record<string, string> = {
+  'quick-thought': '💭',
+  link: '🔗',
+  quote: '💬',
+  til: '💡',
+  question: '❓',
+};
+
+const subtypeLabels: Record<string, string> = {
+  'quick-thought': 'Thought',
+  link: 'Link',
+  quote: 'Quote',
+  til: 'TIL',
+  question: 'Question',
+};
+---
+
+<BaseLayout title="Daily - dk.ai" description="Quick thoughts, hot takes, and things I found interesting today.">
+  <div class="max-w-2xl mx-auto">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-white mb-2">Daily</h1>
+      <p class="text-lg text-surface-200">Quick thoughts, hot takes, and things I found interesting today.</p>
+    </div>
+
+    <!-- Date-grouped stream -->
+    <div class="space-y-8">
+      {Object.entries(grouped).map(([dateKey, dayPosts]) => {
+        const date = new Date(dateKey + 'T12:00:00');
+        const formatted = date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+        return (
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <h2 class="text-sm font-mono text-surface-200/70 uppercase tracking-wider">{formatted}</h2>
+              <div class="flex-1 h-px bg-white/5"></div>
+            </div>
+            <div class="space-y-4">
+              {dayPosts.map((post) => (
+                <div class="glass p-5 card-hover" id={post.slug}>
+                  {/* Post header */}
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="text-base" title={subtypeLabels[post.data.subtype]}>
+                      {subtypeIcons[post.data.subtype] || '💭'}
+                    </span>
+                    <h3 class="text-sm font-semibold text-white">{post.data.title}</h3>
+                  </div>
+
+                  {/* Post body */}
+                  {post.body && (
+                    <div class="text-sm text-surface-200 leading-relaxed mb-3">
+                      <p>{post.body.trim()}</p>
+                    </div>
+                  )}
+
+                  {/* Link preview card */}
+                  {post.data.link && post.data.linkTitle && (
+                    <a
+                      href={post.data.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="block rounded-lg border border-white/10 overflow-hidden hover:border-white/20 transition-all group mb-3"
+                    >
+                      {(post.data.linkImage || ogImages.get(post.slug)) && (
+                        <div class="w-full h-40 bg-surface-800 overflow-hidden">
+                          <img
+                            src={post.data.linkImage || ogImages.get(post.slug)}
+                            alt=""
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      <div class="p-3.5 bg-white/[0.03]">
+                        <p class="text-xs text-surface-200/70 font-mono uppercase tracking-wider mb-1">{post.data.linkSource}</p>
+                        <p class="text-sm font-medium text-white group-hover:text-blue-400 transition-colors leading-snug">{post.data.linkTitle}</p>
+                        {post.data.linkDescription && (
+                          <p class="text-xs text-surface-200/80 mt-1.5 line-clamp-2 leading-relaxed">{post.data.linkDescription}</p>
+                        )}
+                      </div>
+                    </a>
+                  )}
+
+                  {/* Simple link fallback (no preview data) */}
+                  {post.data.link && !post.data.linkTitle && (
+                    <a
+                      href={post.data.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 mt-1 mb-3 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      Read source &rarr;
+                    </a>
+                  )}
+
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {posts.length === 0 && (
+      <div class="glass p-8 text-center">
+        <p class="text-surface-200">No daily posts yet. Check back soon.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

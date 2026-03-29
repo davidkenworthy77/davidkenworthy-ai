@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const experiments = await getCollection('lab');
+  return experiments.map((exp) => ({
+    params: { slug: exp.slug },
+    props: { experiment: exp },
+  }));
+}
+
+interface Props {
+  experiment: CollectionEntry<'lab'>;
+}
+
+const { experiment } = Astro.props;
+const { Content } = await experiment.render();
+
+const statusColors: Record<string, string> = {
+  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  complete: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  archived: 'bg-surface-200/10 text-surface-200/70 border-white/10',
+};
+
+const statusDots: Record<string, string> = {
+  active: 'bg-emerald-400',
+  complete: 'bg-blue-400',
+  archived: 'bg-surface-200/40',
+};
+---
+
+<BaseLayout title={`${experiment.data.title} - Lab - dk.ai`} description={experiment.data.description}>
+  <article class="max-w-reading mx-auto">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="badge badge-lab">Lab</span>
+        <span class:list={['badge border', statusColors[experiment.data.status]]}>
+          <span class:list={['w-1.5 h-1.5 rounded-full mr-1.5', statusDots[experiment.data.status]]}></span>
+          {experiment.data.status.charAt(0).toUpperCase() + experiment.data.status.slice(1)}
+        </span>
+      </div>
+
+      <h1 class="text-3xl font-bold text-white mb-3">{experiment.data.title}</h1>
+      <p class="text-lg text-surface-200 mb-4">{experiment.data.description}</p>
+
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        <span class="font-mono text-surface-200/70">
+          {experiment.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+        </span>
+        {experiment.data.sourceUrl && (
+          <a
+            href={experiment.data.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-accent-DEFAULT hover:text-accent-hover transition-colors"
+          >
+            Source Code &rarr;
+          </a>
+        )}
+        {experiment.data.demoUrl && (
+          <a
+            href={experiment.data.demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            Live Demo &rarr;
+          </a>
+        )}
+      </div>
+    </header>
+
+    <div class="prose prose-invert prose-lg max-w-none">
+      <Content />
+    </div>
+
+    <div class="mt-10 pt-8 border-t border-white/5">
+      <a href="/lab" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors">
+        &larr; Back to all experiments
+      </a>
+    </div>
+  </article>
+</BaseLayout>

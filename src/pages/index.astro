@@ -1,0 +1,130 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const longReads = await getCollection('long-reads', ({ data }) => data.status === 'published');
+const dailyPosts = await getCollection('daily', ({ data }) => data.status === 'published');
+
+const sortedLongReads = longReads.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const sortedDaily = dailyPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Group daily posts by date
+const dailyByDate = new Map<string, typeof sortedDaily>();
+for (const post of sortedDaily) {
+  const key = post.data.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  if (!dailyByDate.has(key)) dailyByDate.set(key, []);
+  dailyByDate.get(key)!.push(post);
+}
+
+const subtypeEmoji: Record<string, string> = {
+  'quick-thought': '💭',
+  link: '🔗',
+  quote: '💬',
+  til: '💡',
+  question: '❓',
+};
+
+const subtypeLabels: Record<string, string> = {
+  'quick-thought': 'Thought',
+  link: 'Link',
+  quote: 'Quote',
+  til: 'TIL',
+  question: 'Question',
+};
+---
+
+<BaseLayout title="dk.ai - Dave Kenworthy">
+  <!-- Hero -->
+  <div class="mb-16">
+    <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+      Building, breaking, and writing about AI.
+    </h1>
+    <p class="text-lg text-surface-200 max-w-2xl">One person's attempt to make sense of AI as it rewires how we work, build, and think. Long-form essays and daily links from the front lines.</p>
+  </div>
+
+  <!-- Long Reads Section -->
+  <section class="mb-16">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+          <span class="w-1 h-6 bg-blue-500 rounded-full inline-block"></span>
+          Long Reads
+        </h2>
+        <p class="text-sm text-surface-200 mt-1 ml-3">Deep dives into what AI is actually doing to work, products, and people.</p>
+      </div>
+      <a href="/long-reads" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors whitespace-nowrap">
+        View all &rarr;
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {sortedLongReads.map((post) => (
+        <a href={`/long-reads/${post.slug}`} class="glass card-hover block overflow-hidden group">
+          {post.data.heroImage && (
+            <div class="w-full h-48 overflow-hidden">
+              <img
+                src={post.data.heroImage}
+                alt=""
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
+          )}
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-white group-hover:text-accent-DEFAULT transition-colors mb-2">
+              {post.data.title}
+            </h3>
+            {post.data.excerpt && (
+              <p class="text-sm text-surface-200 line-clamp-2 mb-3">{post.data.excerpt}</p>
+            )}
+            <div class="flex items-center gap-3 text-xs text-surface-200/70 font-mono">
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </time>
+              {post.data.readingTime && (
+                <span>{post.data.readingTime} min read</span>
+              )}
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Daily Section -->
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+          <span class="w-1 h-6 bg-emerald-500 rounded-full inline-block"></span>
+          Daily
+        </h2>
+        <p class="text-sm text-surface-200 mt-1 ml-3">Quick takes, links, and things worth paying attention to.</p>
+      </div>
+      <a href="/daily" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors whitespace-nowrap">
+        View all &rarr;
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {sortedDaily.map((post) => (
+        <a href={`/daily#${post.slug}`} class="glass card-hover block p-4 group">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-base" title={subtypeLabels[post.data.subtype] || post.data.subtype}>
+              {subtypeEmoji[post.data.subtype] || '📝'}
+            </span>
+            <span class="text-xs font-mono text-surface-200">
+              {post.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+          <h3 class="text-sm font-medium text-white group-hover:text-accent-DEFAULT transition-colors mb-3 line-clamp-3">
+            {post.data.title}
+          </h3>
+          {post.data.linkSource && (
+            <span class="text-xs text-surface-200/60 font-mono truncate">{post.data.linkSource}</span>
+          )}
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

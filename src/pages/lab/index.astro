@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const experiments = (await getCollection('lab'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const statusColors: Record<string, string> = {
+  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  complete: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  archived: 'bg-surface-200/10 text-surface-200/70 border-white/10',
+};
+
+const statusDots: Record<string, string> = {
+  active: 'bg-emerald-400',
+  complete: 'bg-blue-400',
+  archived: 'bg-surface-200/40',
+};
+---
+
+<BaseLayout title="Lab - dk.ai" description="Stuff I built. Some of it works.">
+  <div class="max-w-4xl mx-auto">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-white mb-2">Lab</h1>
+      <p class="text-lg text-surface-200">Stuff I built. Some of it works.</p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+      {experiments.map((exp) => (
+        <a href={`/lab/${exp.slug}`} class="glass card-hover p-6 group block">
+          <!-- Status Badge -->
+          <div class="flex items-center justify-between mb-4">
+            <span class:list={['badge border', statusColors[exp.data.status]]}>
+              <span class:list={['w-1.5 h-1.5 rounded-full mr-1.5', statusDots[exp.data.status]]}></span>
+              {exp.data.status.charAt(0).toUpperCase() + exp.data.status.slice(1)}
+            </span>
+            <span class="text-xs font-mono text-surface-200/60">
+              {exp.data.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+            </span>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white group-hover:text-accent-DEFAULT transition-colors mb-2">
+            {exp.data.title}
+          </h3>
+
+          <p class="text-sm text-surface-200 mb-4 line-clamp-2">{exp.data.description}</p>
+
+          <div class="flex flex-wrap gap-1.5">
+            {exp.data.tags.map((tag) => (
+              <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-surface-200/70">{tag}</span>
+            ))}
+          </div>
+        </a>
+      ))}
+    </div>
+
+    {experiments.length === 0 && (
+      <div class="glass p-8 text-center">
+        <p class="text-surface-200">No experiments yet. Check back soon.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

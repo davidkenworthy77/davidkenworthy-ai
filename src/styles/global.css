@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Light mode (default) */
+  :root {
+    --color-long-reads: #3b82f6;
+    --color-daily: #10b981;
+    --color-lab: #06b6d4;
+    --color-stack: #f59e0b;
+
+    --bg-primary: #f8f9fb;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card-hover: rgba(255, 255, 255, 0.95);
+    --bg-nav: rgba(248, 249, 251, 0.85);
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-color-hover: rgba(0, 0, 0, 0.15);
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --text-faint: #a0aec0;
+    --scrollbar-color: rgba(0, 0, 0, 0.1);
+    --code-bg: rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-card-hover: 0 4px 20px rgba(59, 130, 246, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Dark mode */
+  :root.dark {
+    --bg-primary: #151528;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+    --bg-nav: rgba(21, 21, 40, 0.80);
+    --border-color: rgba(255, 255, 255, 0.10);
+    --border-color-hover: rgba(255, 255, 255, 0.20);
+    --text-primary: #ffffff;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-faint: rgba(203, 213, 225, 0.6);
+    --scrollbar-color: rgba(255, 255, 255, 0.1);
+    --code-bg: rgba(15, 15, 32, 0.5);
+    --shadow-card: none;
+    --shadow-card-hover: 0 0 20px rgba(59, 130, 246, 0.08);
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-card);
+    @apply backdrop-blur-xl rounded-xl;
+  }
+
+  .glass-nav {
+    background: var(--bg-nav);
+    border-bottom: 1px solid var(--border-color);
+    @apply backdrop-blur-xl;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .card-hover:hover {
+    @apply -translate-y-0.5;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .accent-glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+
+  .subscribe-pulse {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-long-reads {
+    @apply bg-blue-500/10 text-blue-600 border border-blue-500/20;
+  }
+  .dark .badge-long-reads {
+    @apply text-blue-400;
+  }
+
+  .badge-daily {
+    @apply bg-emerald-500/10 text-emerald-600 border border-emerald-500/20;
+  }
+  .dark .badge-daily {
+    @apply text-emerald-400;
+  }
+
+  .badge-lab {
+    @apply bg-cyan-500/10 text-cyan-600 border border-cyan-500/20;
+  }
+  .dark .badge-lab {
+    @apply text-cyan-400;
+  }
+
+  .badge-stack {
+    @apply bg-amber-500/10 text-amber-600 border border-amber-500/20;
+  }
+  .dark .badge-stack {
+    @apply text-amber-400;
+  }
+
+  .reading-progress {
+    @apply fixed top-0 left-0 h-0.5 bg-blue-500 z-50;
+    transition: width 100ms ease-out;
+  }
+
+  .filter-pill {
+    @apply px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .filter-pill:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+
+  .filter-pill.active {
+    @apply bg-blue-500/20 text-blue-500 border-blue-500/30;
+  }
+
+  /* Pull quote styling for long reads */
+  .pull-quote {
+    @apply relative pl-6 my-10 py-2;
+    border-left: 3px solid #3b82f6;
+  }
+
+  .pull-quote p {
+    color: var(--text-primary);
+    opacity: 0.9;
+    @apply text-xl sm:text-2xl font-medium leading-relaxed italic;
+  }
+
+  /* Stat card grid */
+  .stat-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 gap-3 my-8;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    @apply rounded-xl p-4 text-center;
+  }
+
+  .stat-card .stat-value {
+    @apply text-2xl sm:text-3xl font-bold text-blue-500 font-mono;
+  }
+
+  .stat-card .stat-label {
+    color: var(--text-muted);
+    @apply text-xs mt-1;
+  }
+
+  /* Source/reference card */
+  .source-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    @apply flex items-start gap-3 rounded-lg p-4 my-2 transition-colors;
+  }
+
+  .source-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color-hover);
+  }
+
+  /* Callout box */
+  .callout {
+    @apply bg-blue-500/5 border border-blue-500/15 rounded-xl p-5 my-8;
+  }
+
+  .callout-amber {
+    @apply bg-amber-500/5 border border-amber-500/15 rounded-xl p-5 my-8;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    @apply p-2 rounded-lg transition-colors;
+    color: var(--text-muted);
+  }
+  .theme-toggle:hover {
+    color: var(--text-primary);
+    background: var(--bg-card);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-color);
+  @apply rounded-full;
+}
+
+/* Code block styling */
+pre {
+  background: var(--code-bg) !important;
+  border: 1px solid var(--border-color);
+  @apply rounded-xl;
+}
+
+/* Light mode text overrides for elements using hardcoded colors */
+:root:not(.dark) .text-white {
+  color: var(--text-primary) !important;
+}
+
+:root:not(.dark) .text-surface-200 {
+  color: var(--text-secondary) !important;
+}
+
+:root:not(.dark) .text-surface-200\/70,
+:root:not(.dark) .text-surface-200\/80 {
+  color: var(--text-muted) !important;
+}
+
+:root:not(.dark) .text-surface-200\/60 {
+  color: var(--text-faint) !important;
+}
+
+:root:not(.dark) .text-white\/80 {
+  color: var(--text-primary) !important;
+  opacity: 0.85;
+}
+
+:root:not(.dark) .text-white\/90 {
+  color: var(--text-primary) !important;
+  opacity: 0.95;
+}
+
+/* Light mode border overrides */
+:root:not(.dark) .border-white\/10,
+:root:not(.dark) .border-white\/5 {
+  border-color: var(--border-color) !important;
+}
+
+:root:not(.dark) .border-white\/20 {
+  border-color: var(--border-color-hover) !important;
+}
+
+/* Light mode background overrides */
+:root:not(.dark) .bg-white\/5,
+:root:not(.dark) .bg-white\/\[0\.03\],
+:root:not(.dark) .bg-white\/\[0\.06\] {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+:root:not(.dark) .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+:root:not(.dark) .bg-surface-900,
+:root:not(.dark) .bg-surface-800 {
+  background-color: var(--bg-primary) !important;
+}
+
+:root:not(.dark) .bg-surface-900\/80 {
+  background-color: rgba(248, 249, 251, 0.85) !important;
+}
+
+/* Light mode hover text overrides */
+:root:not(.dark) .hover\:text-white:hover {
+  color: var(--text-primary) !important;
+}
+
+:root:not(.dark) .hover\:bg-white\/5:hover,
+:root:not(.dark) .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+:root:not(.dark) .hover\:border-white\/20:hover {
+  border-color: var(--border-color-hover) !important;
+}
+
+/* Light mode placeholder */
+:root:not(.dark) .placeholder-white\/30::placeholder {
+  color: rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Light mode bg-black for modal overlay is fine */
+
+/* Light mode footer border */
+:root:not(.dark) .border-t.border-white\/5 {
+  border-color: var(--border-color) !important;
+}
+
+/* Light mode daily link preview cards */
+:root:not(.dark) .bg-surface-800 {
+  background-color: #edf2f7 !important;
+}
+
+/* Light mode amber text */
+:root:not(.dark) .text-amber-400 {
+  @apply text-amber-600 !important;
+}
+
+/* Light mode typography prose */
+:root:not(.dark) .prose {
+  --tw-prose-body: #374151;
+  --tw-prose-headings: #1a1a2e;
+  --tw-prose-lead: #4a5568;
+  --tw-prose-links: #2563eb;
+  --tw-prose-bold: #1a1a2e;
+  --tw-prose-counters: #6b7280;
+  --tw-prose-bullets: #9ca3af;
+  --tw-prose-hr: rgba(0,0,0,0.1);
+  --tw-prose-quotes: #374151;
+  --tw-prose-quote-borders: #3b82f6;
+  --tw-prose-code: #2563eb;
+  --tw-prose-th-borders: rgba(0,0,0,0.1);
+  --tw-prose-td-borders: rgba(0,0,0,0.05);
+}
+
+/* Dark mode typography prose */
+:root.dark .prose {
+  --tw-prose-body: #d1d5db;
+  --tw-prose-headings: #ffffff;
+  --tw-prose-lead: #d1d5db;
+  --tw-prose-links: #60a5fa;
+  --tw-prose-bold: #f1f5f9;
+  --tw-prose-counters: #9ca3af;
+  --tw-prose-bullets: #6b7280;
+  --tw-prose-hr: rgba(255,255,255,0.1);
+  --tw-prose-quotes: #e5e7eb;
+  --tw-prose-quote-borders: #3b82f6;
+  --tw-prose-code: #60a5fa;
+  --tw-prose-th-borders: rgba(255,255,255,0.1);
+  --tw-prose-td-borders: rgba(255,255,255,0.05);
+}
+
+/* Light mode: ensure button text on accent bg stays white */
+:root:not(.dark) .subscribe-pulse,
+:root:not(.dark) .bg-accent-DEFAULT,
+:root:not(.dark) button[type="submit"] {
+  color: #ffffff !important;
+}
+
+/* Light mode: subscribe buttons need visible text */
+:root:not(.dark) .subscribe-pulse {
+  color: #1a1a2e !important;
+  background: rgba(59, 130, 246, 0.12) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: none;
+  animation: none;
+}
+:root:not(.dark) .subscribe-pulse:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Light mode form inputs */
+:root:not(.dark) input.bg-white\/5 {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Light mode blue link text - keep it blue, don't override to dark */
+:root:not(.dark) .text-blue-400 {
+  color: #2563eb !important;
+}
+:root:not(.dark) .hover\:text-blue-400:hover {
+  color: #1d4ed8 !important;
+}
+:root:not(.dark) .hover\:text-blue-300:hover {
+  color: #2563eb !important;
+}

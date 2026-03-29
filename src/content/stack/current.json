@@ -1,0 +1,46 @@
+{
+  "version": "4.1",
+  "date": "2026-03-26",
+  "categories": [
+    {
+      "name": "AI Assistants & Models",
+      "tools": [
+        { "name": "Claude", "verdict": "My daily driver for everything from writing to coding to thinking.", "url": "https://claude.ai", "status": "unchanged" },
+        { "name": "Claude Code", "verdict": "How I build and manage this entire site. Game-changer.", "url": "https://claude.ai/code", "status": "new" },
+        { "name": "GPT-4o", "verdict": "Still useful for certain tasks, but Claude handles most of my workflow now.", "url": "https://openai.com", "status": "unchanged" }
+      ]
+    },
+    {
+      "name": "Dev Tools & IDEs",
+      "tools": [
+        { "name": "VS Code", "verdict": "The editor. Cursor is interesting but VS Code + extensions still wins for me.", "url": "https://code.visualstudio.com", "status": "unchanged" },
+        { "name": "Astro", "verdict": "Perfect for content sites. Fast, flexible, great DX.", "url": "https://astro.build", "status": "new" },
+        { "name": "Vercel", "verdict": "Deploy and forget. The integration with git is seamless.", "url": "https://vercel.com", "status": "unchanged" },
+        { "name": "Supabase", "verdict": "My go-to backend when I need a database. Postgres + auth + realtime.", "url": "https://supabase.com", "status": "unchanged" }
+      ]
+    },
+    {
+      "name": "Productivity & Workflow",
+      "tools": [
+        { "name": "Linear", "verdict": "Best project management tool ever made. Fast, opinionated, beautiful.", "url": "https://linear.app", "status": "unchanged" },
+        { "name": "Notion", "verdict": "My second brain. Docs, notes, wikis, everything.", "url": "https://notion.so", "status": "unchanged" },
+        { "name": "Raycast", "verdict": "Replaced Spotlight, Alfred, and half my menu bar apps.", "url": "https://raycast.com", "status": "unchanged" },
+        { "name": "Arc", "verdict": "The browser I actually enjoy using.", "url": "https://arc.net", "status": "unchanged" }
+      ]
+    },
+    {
+      "name": "Design Tools",
+      "tools": [
+        { "name": "Figma", "verdict": "Still the standard, even if I use it less than I used to.", "url": "https://figma.com", "status": "unchanged" },
+        { "name": "Excalidraw", "verdict": "For quick diagrams and thinking out loud visually.", "url": "https://excalidraw.com", "status": "unchanged" }
+      ]
+    },
+    {
+      "name": "Hardware & Setup",
+      "tools": [
+        { "name": "MacBook Pro M3 Max", "verdict": "Overkill for most things. Perfect for everything.", "url": "https://apple.com/macbook-pro", "status": "unchanged" },
+        { "name": "Studio Display", "verdict": "One cable, great screen, mediocre webcam. Worth it.", "url": "https://apple.com/studio-display", "status": "unchanged" }
+      ]
+    }
+  ]
+}

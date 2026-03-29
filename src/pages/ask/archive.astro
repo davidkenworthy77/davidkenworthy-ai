@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const questions = (await getCollection('ask', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const topicColors: Record<string, string> = {
+  ai: 'badge-long-reads',
+  product: 'badge-daily',
+  career: 'badge-lab',
+  tools: 'badge-stack',
+  other: 'bg-white/5 text-surface-200 border border-white/10',
+};
+---
+
+<BaseLayout title="Ask Me Archive - dk.ai" description="Answered questions from the community.">
+  <div class="max-w-2xl mx-auto">
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <a href="/ask" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">&larr; Connect</a>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-2">Q&A Archive</h1>
+      <p class="text-lg text-surface-200">Answered questions from the community.</p>
+    </div>
+
+    <div class="space-y-4">
+      {questions.map((q) => (
+        <a href={`/ask/${q.slug}`} class="glass card-hover block p-5 group">
+          <div class="flex items-center gap-2 mb-2">
+            <span class:list={['badge', topicColors[q.data.topic]]}>{q.data.topic}</span>
+            <span class="text-xs font-mono text-surface-200/60">
+              {q.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
+          <h3 class="text-base font-semibold text-white group-hover:text-accent-DEFAULT transition-colors">
+            {q.data.question}
+          </h3>
+          <p class="text-xs text-surface-200/70 mt-1">Asked by {q.data.askedBy}</p>
+        </a>
+      ))}
+    </div>
+
+    {questions.length === 0 && (
+      <div class="glass p-8 text-center">
+        <p class="text-surface-200">No answered questions yet. Be the first to <a href="/ask" class="text-accent-DEFAULT">ask one</a>!</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

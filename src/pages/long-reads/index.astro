@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContentCard from '../../components/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('long-reads', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="Long Reads - dk.ai" description="The deep dives. One per week, give or take.">
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-white mb-2">Long Reads</h1>
+      <p class="text-lg text-surface-200">The deep dives. One per week, give or take.</p>
+    </div>
+
+    <div class="space-y-4">
+      {posts.map((post) => (
+        <ContentCard
+          title={post.data.title}
+          href={`/long-reads/${post.slug}`}
+          date={post.data.date}
+          type="long-read"
+          excerpt={post.data.excerpt}
+          readingTime={post.data.readingTime}
+          tags={post.data.tags}
+          heroImage={post.data.heroImage}
+        />
+      ))}
+    </div>
+
+    {posts.length === 0 && (
+      <div class="glass p-8 text-center">
+        <p class="text-surface-200">No long reads yet. Check back soon.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

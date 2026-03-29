@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getEntry } from 'astro:content';
+
+const page = await getEntry('pages', 'colophon');
+const { Content } = await page.render();
+---
+
+<BaseLayout title="Colophon - dk.ai" description="How this site is built.">
+  <article class="max-w-reading mx-auto prose prose-invert prose-lg">
+    <Content />
+  </article>
+</BaseLayout>

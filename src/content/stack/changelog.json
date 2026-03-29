@@ -1,0 +1,20 @@
+[
+  {
+    "version": "4.1",
+    "date": "2026-03-26",
+    "changes": [
+      { "type": "added", "tool": "Claude Code", "reason": "Building my entire site through conversation. This is the future of development." },
+      { "type": "added", "tool": "Astro", "reason": "Moved my site from Next.js to Astro. Better for content, faster builds, simpler mental model." }
+    ]
+  },
+  {
+    "version": "4.0",
+    "date": "2026-02-15",
+    "changes": [
+      { "type": "added", "tool": "Raycast", "reason": "Finally replaced Alfred. The AI extensions are killer." },
+      { "type": "dropped", "tool": "Alfred", "reason": "Good run, but Raycast does everything better now." },
+      { "type": "added", "tool": "Linear", "reason": "Switched from Asana. Never looking back." },
+      { "type": "dropped", "tool": "Asana", "reason": "Too slow, too cluttered. Linear is what project management should feel like." }
+    ]
+  }
+]

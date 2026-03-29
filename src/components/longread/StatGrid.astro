@@ -1,0 +1,30 @@
+---
+interface Stat {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  stats: Stat[];
+}
+
+const { stats } = Astro.props;
+const cols = stats.length <= 3 ? stats.length : 4;
+---
+
+<div class="not-prose" style={`display: grid; grid-template-columns: repeat(${Math.min(cols, 2)}, 1fr); gap: 0.75rem; margin-top: 2rem; margin-bottom: 2rem;`}>
+  {stats.map((stat) => (
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+      <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6; font-family: 'JetBrains Mono', monospace;">{stat.value}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">{stat.label}</div>
+    </div>
+  ))}
+</div>
+
+<style>
+  @media (min-width: 640px) {
+    .not-prose {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+  }
+</style>
