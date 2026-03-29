@@ -71,7 +71,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const resend = new Resend(apiKey);
 
     await resend.emails.send({
-      from: 'dk.ai <onboarding@resend.dev>',
+      from: 'dk.ai <noreply@davidkenworthy.ai>',
       to: 'davidkenworthy77@gmail.com',
       subject: `New message from ${name || 'Anonymous'} on dk.ai`,
       text: `Name: ${name || 'Anonymous'}\n\nMessage:\n${question}`,
