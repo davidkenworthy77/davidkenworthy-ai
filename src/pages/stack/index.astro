@@ -1,84 +1,335 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import stackData from '../../content/stack/current.json';
 
-const statusBadge: Record<string, { label: string; class: string }> = {
-  new: { label: 'New', class: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  changed: { label: 'Changed', class: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-  dropped: { label: 'Dropped', class: 'bg-red-500/10 text-red-400 border-red-500/20' },
+function faviconUrl(url: string) {
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  } catch {
+    return '';
+  }
+}
+
+function renderStars(rating: number) {
+  return Array.from({ length: 5 }, (_, i) => i < rating ? '\u2605' : '\u2606').join('');
+}
+
+// --- DAILY DRIVERS: Featured hero + sub-tools ---
+const claudeEcosystem = {
+  hero: {
+    name: "Claude",
+    description: "The centre of my entire workflow. Writing, coding, thinking, building. Claude handles 90% of what I do every day. Everything below runs through it.",
+    url: "https://claude.ai",
+  },
+  tools: [
+    {
+      name: "Claude Chat",
+      use: "Thinking & writing",
+      description: "Strategy, drafts, research, brainstorming. My first stop for almost everything.",
+      url: "https://claude.ai",
+    },
+    {
+      name: "Claude Code",
+      use: "AI development",
+      description: "How I build and manage this entire site. Pair programming on steroids.",
+      url: "https://claude.ai/code",
+    },
+    {
+      name: "Claude Cowork",
+      use: "Background agent",
+      description: "Autonomous task runner. Kicks off work while I focus on something else.",
+      url: "https://claude.ai",
+    },
+  ],
 };
 
-const formattedDate = new Date(stackData.date + 'T12:00:00').toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const dailyDrivers = [
+  {
+    name: "Wispr Flow",
+    use: "Voice dictation",
+    description: "Dictate at nearly 180 words per minute. My typing became a bottleneck, so I stopped.",
+    url: "https://wisprflow.ai",
+  },
+  {
+    name: "Google NotebookLM",
+    use: "Research & synthesis",
+    description: "Feed it sources, get structured understanding. Great for deep dives on new topics.",
+    url: "https://notebooklm.google.com",
+  },
+];
+
+// --- TECH STACK: Grid layout ---
+const techStack = [
+  {
+    name: "GitHub",
+    use: "Source control",
+    url: "https://github.com",
+  },
+  {
+    name: "Vercel",
+    use: "Hosting & deploy",
+    url: "https://vercel.com",
+  },
+  {
+    name: "Netlify",
+    use: "Alt hosting",
+    url: "https://netlify.com",
+  },
+  {
+    name: "Supabase",
+    use: "Backend & database",
+    url: "https://supabase.com",
+  },
+  {
+    name: "Warp",
+    use: "Terminal",
+    url: "https://warp.dev",
+  },
+  {
+    name: "Figma",
+    use: "Design & MCP",
+    url: "https://figma.com",
+  },
+  {
+    name: "Astro",
+    use: "Web framework",
+    url: "https://astro.build",
+  },
+];
+
+// --- TRIED & TESTED: Compact with ratings ---
+const triedAndTested = [
+  { name: "GPT-4o", description: "Still useful for certain tasks, especially vision and voice. Claude handles most of my workflow now.", url: "https://openai.com", rating: 4 },
+  { name: "Codex", description: "OpenAI's autonomous coding agent. Solid at churning through tasks, but Claude Code is sharper.", url: "https://openai.com/codex", rating: 4 },
+  { name: "GPT Atlas", description: "OpenAI's deep research tool. Good for long-form synthesis and multi-source exploration.", url: "https://openai.com", rating: 4 },
+  { name: "Linear", description: "Best project management tool ever made. Fast, opinionated, beautiful. Overkill for solo work.", url: "https://linear.app", rating: 5 },
+  { name: "VS Code", description: "The editor. Extensions ecosystem is unmatched. Cursor is interesting but VS Code still wins.", url: "https://code.visualstudio.com", rating: 4 },
+  { name: "Notion", description: "Docs, notes, wikis, everything. The place where all my thinking lives.", url: "https://notion.so", rating: 4 },
+  { name: "LangChain", description: "The framework for building LLM-powered applications. Essential for anything beyond basic prompting.", url: "https://langchain.com", rating: 5 },
+  { name: "Base44", description: "AI-powered app builder. Impressively fast for spinning up functional prototypes.", url: "https://base44.com", rating: 5 },
+  { name: "Lovable", description: "AI-first web app builder. Beautiful outputs with minimal effort. Great for rapid prototyping.", url: "https://lovable.dev", rating: 5 },
+];
+
+// --- TRASH CAN: Compact dismissive list ---
+const trashCan = [
+  { name: "Google Bard", description: "Tried it. Went back to Claude within a day.", url: "https://gemini.google.com" },
+  { name: "Copilot", description: "Fine for autocomplete. Not a thinking partner.", url: "https://github.com/features/copilot" },
+  { name: "Evernote", description: "Used it for years. Notion replaced it entirely. Never looked back.", url: "https://evernote.com" },
+];
 ---
 
-<BaseLayout title="The Stack - dk.ai" description="Every tool I actually use, versioned like software.">
+<BaseLayout title="My Stack - dk.ai" description="The tools, software, and hardware I use every day, the ones I've tested, and the ones that didn't make the cut.">
   <div class="max-w-3xl mx-auto">
-    <div class="mb-10">
-      <h1 class="text-3xl font-bold text-white mb-2">The Stack</h1>
-      <p class="text-lg text-surface-200">Every tool I actually use, versioned like software.</p>
+    <!-- Header -->
+    <div class="mb-12">
+      <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">My Stack</h1>
+      <p class="text-lg" style="color: var(--text-secondary);">The tools, software, and hardware I use every day, the ones I've tested, and the ones that didn't make the cut.</p>
     </div>
 
-    <!-- Version Banner -->
-    <div class="glass p-5 mb-8 flex items-center justify-between">
-      <div>
-        <span class="font-mono text-lg font-semibold text-amber-400">
-          Dave's Stack v{stackData.version}
-        </span>
-        <span class="text-surface-200/70 text-sm ml-2">/ {formattedDate}</span>
-      </div>
-      <a href="/stack/changelog" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors">
-        View changelog &rarr;
-      </a>
-    </div>
-
-    <!-- Categories -->
-    <div class="space-y-8">
-      {stackData.categories.map((category) => (
-        <div>
-          <h2 class="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4 flex items-center gap-2">
-            {category.name}
-            <span class="flex-1 h-px bg-white/5"></span>
-          </h2>
-          <div class="space-y-2">
-            {category.tools.map((tool) => (
-              <div class="glass p-4 flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <a
-                      href={tool.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="font-medium text-white hover:text-accent-DEFAULT transition-colors"
-                    >
-                      {tool.name}
-                    </a>
-                    {tool.status !== 'unchanged' && statusBadge[tool.status] && (
-                      <span class:list={['badge border text-[10px]', statusBadge[tool.status].class]}>
-                        {statusBadge[tool.status].label}
-                      </span>
-                    )}
-                  </div>
-                  <p class="text-sm text-surface-200">{tool.verdict}</p>
-                </div>
-                <a
-                  href={tool.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="shrink-0 text-surface-200/50 hover:text-surface-200/80 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-              </div>
-            ))}
-          </div>
+    <!-- ============================================ -->
+    <!-- DAILY DRIVERS: Big feature cards             -->
+    <!-- ============================================ -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
+          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
         </div>
-      ))}
-    </div>
+        <div>
+          <h2 class="text-xl font-bold" style="color: var(--text-primary);">Daily Drivers</h2>
+          <p class="text-sm" style="color: var(--text-muted);">The tools I reach for every single day.</p>
+        </div>
+      </div>
+
+      <!-- Claude Hero Card -->
+      <div class="claude-hero" style="position: relative; border-radius: 1rem; overflow: hidden; margin-bottom: 0.75rem;">
+        <a href={claudeEcosystem.hero.url} target="_blank" rel="noopener noreferrer" class="stack-card-hero" style="display: block; padding: 2rem; background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(59,130,246,0.08)); border: 1px solid rgba(139,92,246,0.15); border-radius: 1rem; text-decoration: none; transition: all 0.2s;">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <div style="width: 56px; height: 56px; border-radius: 14px; background: var(--bg-card); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src={faviconUrl(claudeEcosystem.hero.url)} alt="Claude" width="32" height="32" loading="lazy" style="border-radius: 6px;" />
+            </div>
+            <div>
+              <h3 class="hero-name" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; transition: color 0.2s;">Claude</h3>
+              <span style="font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);">by Anthropic</span>
+            </div>
+          </div>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">{claudeEcosystem.hero.description}</p>
+        </a>
+      </div>
+
+      <!-- Claude Sub-tools: 3-up grid -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+        {claudeEcosystem.tools.map((tool) => (
+          <a href={tool.url} target="_blank" rel="noopener noreferrer" class="stack-card" style="display: block; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); transition: all 0.2s; text-decoration: none;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="width: 28px; height: 28px; border-radius: 7px; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+                <img src={faviconUrl(tool.url)} alt={tool.name} width="16" height="16" loading="lazy" style="border-radius: 3px;" />
+              </div>
+              <span class="stack-card-name" style="font-weight: 600; font-size: 0.875rem; color: var(--text-primary); transition: color 0.2s;">{tool.name}</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin: 0 0 0.25rem 0;">{tool.use}</p>
+            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">{tool.description}</p>
+          </a>
+        ))}
+      </div>
+
+      <!-- Other Daily Drivers: Medium cards -->
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+        {dailyDrivers.map((tool) => (
+          <a href={tool.url} target="_blank" rel="noopener noreferrer" class="stack-card" style="display: flex; align-items: flex-start; gap: 0.875rem; padding: 1.25rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); transition: all 0.2s; text-decoration: none;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--bg-card-hover); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+              <img src={faviconUrl(tool.url)} alt={tool.name} width="24" height="24" loading="lazy" style="border-radius: 4px;" />
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <span class="stack-card-name" style="font-weight: 600; font-size: 0.9375rem; color: var(--text-primary); display: block; margin-bottom: 0.125rem; transition: color 0.2s;">{tool.name}</span>
+              <p style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin: 0 0 0.25rem 0;">{tool.use}</p>
+              <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">{tool.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- TECH STACK: Icon-forward grid                -->
+    <!-- ============================================ -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold" style="color: var(--text-primary);">Tech Stack</h2>
+          <p class="text-sm" style="color: var(--text-muted);">My go-to technical setup for building things.</p>
+        </div>
+      </div>
+
+      <div class="tech-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
+        {techStack.map((tool) => (
+          <a href={tool.url} target="_blank" rel="noopener noreferrer" class="stack-card tech-tile" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.25rem 0.75rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); transition: all 0.2s; text-decoration: none; gap: 0.625rem;">
+            <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--bg-card-hover); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src={faviconUrl(tool.url)} alt={tool.name} width="28" height="28" loading="lazy" style="border-radius: 6px;" />
+            </div>
+            <div>
+              <span class="stack-card-name" style="font-weight: 600; font-size: 0.8125rem; color: var(--text-primary); display: block; transition: color 0.2s;">{tool.name}</span>
+              <span style="font-size: 0.6875rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">{tool.use}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- TRIED & TESTED: Compact rows with ratings    -->
+    <!-- ============================================ -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2);">
+          <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold" style="color: var(--text-primary);">Tried & Tested</h2>
+          <p class="text-sm" style="color: var(--text-muted);">Solid tools I've used. Some still in rotation, some moved on from.</p>
+        </div>
+      </div>
+
+      <div style="border-radius: 0.75rem; border: 1px solid var(--border-color); overflow: hidden;">
+        {triedAndTested.map((tool, i) => (
+          <a href={tool.url} target="_blank" rel="noopener noreferrer" class="tested-row" style={`display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1.25rem; background: var(--bg-card); text-decoration: none; transition: all 0.15s;${i < triedAndTested.length - 1 ? ' border-bottom: 1px solid var(--border-color);' : ''}`}>
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--bg-card-hover); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+              <img src={faviconUrl(tool.url)} alt={tool.name} width="20" height="20" loading="lazy" style="border-radius: 4px;" />
+            </div>
+            <span class="tested-name" style="font-weight: 600; font-size: 0.875rem; color: var(--text-primary); min-width: 100px; transition: color 0.2s;">{tool.name}</span>
+            <span style="font-size: 0.8125rem; color: #f59e0b; letter-spacing: 1px; flex-shrink: 0;">{renderStars(tool.rating)}</span>
+            <span style="font-size: 0.8125rem; color: var(--text-secondary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{tool.description}</span>
+            <div style="flex-shrink: 0; color: var(--text-muted); opacity: 0.3;">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- TRASH CAN: Faded, compact, dismissed         -->
+    <!-- ============================================ -->
+    <section class="mb-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);">
+          <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold" style="color: var(--text-primary);">The Trash Can</h2>
+          <p class="text-sm" style="color: var(--text-muted);">Tried them. Didn't stick.</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        {trashCan.map((tool) => (
+          <a href={tool.url} target="_blank" rel="noopener noreferrer" class="trash-card" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); text-decoration: none; transition: all 0.2s; opacity: 0.6; flex: 1; min-width: 200px;">
+            <div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-card-hover); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; filter: grayscale(100%);">
+              <img src={faviconUrl(tool.url)} alt={tool.name} width="16" height="16" loading="lazy" style="border-radius: 3px;" />
+            </div>
+            <div style="min-width: 0;">
+              <span class="trash-name" style="font-weight: 600; font-size: 0.8125rem; color: var(--text-primary); text-decoration: line-through; text-decoration-color: var(--text-muted); display: block; transition: color 0.2s;">{tool.name}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3;">{tool.description}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
   </div>
 </BaseLayout>
+
+<style>
+  /* Daily Driver cards */
+  .stack-card:hover {
+    background: var(--bg-card-hover) !important;
+    border-color: var(--border-color-hover) !important;
+  }
+  .stack-card:hover .stack-card-name {
+    color: #3b82f6 !important;
+  }
+
+  /* Hero card */
+  .stack-card-hero:hover {
+    background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(59,130,246,0.12)) !important;
+    border-color: rgba(139,92,246,0.25) !important;
+  }
+  .stack-card-hero:hover .hero-name {
+    color: #8b5cf6 !important;
+  }
+
+  /* Tried & Tested rows */
+  .tested-row:hover {
+    background: var(--bg-card-hover) !important;
+  }
+  .tested-row:hover .tested-name {
+    color: #f59e0b !important;
+  }
+
+  /* Trash cards */
+  .trash-card:hover {
+    opacity: 0.85 !important;
+    background: var(--bg-card-hover) !important;
+  }
+  .trash-card:hover .trash-name {
+    color: #ef4444 !important;
+  }
+
+  /* Tech stack responsive */
+  @media (max-width: 640px) {
+    .tech-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+</style>

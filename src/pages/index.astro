@@ -2,19 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const longReads = await getCollection('long-reads', ({ data }) => data.status === 'published');
-const dailyPosts = await getCollection('daily', ({ data }) => data.status === 'published');
+const longReads = (await getCollection('long-reads', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
-const sortedLongReads = longReads.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-const sortedDaily = dailyPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const dailyPosts = (await getCollection('daily', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
-// Group daily posts by date
-const dailyByDate = new Map<string, typeof sortedDaily>();
-for (const post of sortedDaily) {
-  const key = post.data.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  if (!dailyByDate.has(key)) dailyByDate.set(key, []);
-  dailyByDate.get(key)!.push(post);
-}
+const featured = longReads[0];
+const otherReads = longReads.slice(1);
 
 const subtypeEmoji: Record<string, string> = {
   'quick-thought': '💭',
@@ -24,107 +19,962 @@ const subtypeEmoji: Record<string, string> = {
   question: '❓',
 };
 
-const subtypeLabels: Record<string, string> = {
-  'quick-thought': 'Thought',
-  link: 'Link',
-  quote: 'Quote',
-  til: 'TIL',
-  question: 'Question',
-};
+function faviconUrl(url: string) {
+  try {
+    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
+  } catch { return ''; }
+}
+
+function timeAgo(date: Date) {
+  const diff = Date.now() - date.getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 ---
 
 <BaseLayout title="dk.ai - Dave Kenworthy">
-  <!-- Hero -->
-  <div class="mb-16">
-    <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">
-      Building, breaking, and writing about AI.
+
+  <!-- Noise texture overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- ============================================ -->
+  <!-- HERO: Bold, editorial                        -->
+  <!-- ============================================ -->
+  <section class="hero-section">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Writing about AI
+    </div>
+    <h1 class="hero-title">
+      <span class="hero-title-line">I build things</span>
+      <span class="hero-title-line accent">with AI.</span>
+      <span class="hero-title-line dim">Then I write about it.</span>
     </h1>
-    <p class="text-lg text-surface-200 max-w-2xl">One person's attempt to make sense of AI as it rewires how we work, build, and think. Long-form essays and daily links from the front lines.</p>
-  </div>
+    <p class="hero-sub">Long-form essays, daily links, and the tools behind the work.</p>
 
-  <!-- Long Reads Section -->
-  <section class="mb-16">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
-          <span class="w-1 h-6 bg-blue-500 rounded-full inline-block"></span>
-          Long Reads
-        </h2>
-        <p class="text-sm text-surface-200 mt-1 ml-3">Deep dives into what AI is actually doing to work, products, and people.</p>
-      </div>
-      <a href="/long-reads" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors whitespace-nowrap">
-        View all &rarr;
-      </a>
+    <!-- Decorative elements -->
+    <div class="hero-grid-accent"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- LONG READS: Magazine / hit articles          -->
+  <!-- ============================================ -->
+  <section class="section-reads">
+    <div class="section-label">
+      <span class="section-label-icon blue">01</span>
+      <span>Long Reads</span>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {sortedLongReads.map((post) => (
-        <a href={`/long-reads/${post.slug}`} class="glass card-hover block overflow-hidden group">
+    <!-- Featured: Full-bleed hero article -->
+    {featured && (
+      <a href={`/long-reads/${featured.slug}`} class="featured-card">
+        <div class="featured-image">
+          {featured.data.heroImage && (
+            <img src={featured.data.heroImage} alt="" loading="eager" />
+          )}
+          <div class="featured-overlay"></div>
+        </div>
+        <div class="featured-content">
+          <div class="featured-meta">
+            <span class="featured-badge">Latest</span>
+            <span class="featured-time">{featured.data.readingTime} min read</span>
+          </div>
+          <h2 class="featured-title">{featured.data.title}</h2>
+          <p class="featured-excerpt">{featured.data.excerpt}</p>
+          <div class="featured-cta">
+            Read article
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+    )}
+
+    <!-- Other reads: Stacked editorial cards -->
+    <div class="reads-stack">
+      {otherReads.map((post, i) => (
+        <a href={`/long-reads/${post.slug}`} class="read-card">
+          <div class="read-card-number">{String(i + 2).padStart(2, '0')}</div>
           {post.data.heroImage && (
-            <div class="w-full h-48 overflow-hidden">
-              <img
-                src={post.data.heroImage}
-                alt=""
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
+            <div class="read-card-thumb">
+              <img src={post.data.heroImage} alt="" loading="lazy" />
             </div>
           )}
-          <div class="p-5">
-            <h3 class="text-lg font-semibold text-white group-hover:text-accent-DEFAULT transition-colors mb-2">
-              {post.data.title}
-            </h3>
-            {post.data.excerpt && (
-              <p class="text-sm text-surface-200 line-clamp-2 mb-3">{post.data.excerpt}</p>
+          <div class="read-card-body">
+            <h3 class="read-card-title">{post.data.title}</h3>
+            <p class="read-card-excerpt">{post.data.excerpt}</p>
+            <div class="read-card-meta">
+              <time>{post.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</time>
+              <span class="read-card-dot"></span>
+              <span>{post.data.readingTime} min</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <a href="/long-reads" class="section-link">
+      View all essays
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- DAILY: Social media feed style               -->
+  <!-- ============================================ -->
+  <section class="section-daily">
+    <div class="section-label">
+      <span class="section-label-icon green">02</span>
+      <span>Daily Feed</span>
+    </div>
+
+    <div class="feed-container">
+      {dailyPosts.slice(0, 6).map((post, i) => (
+        <a href={`/daily#${post.slug}`} class={`feed-item ${i === 0 ? 'feed-item-featured' : ''}`}>
+          <div class="feed-item-header">
+            <div class="feed-avatar">
+              <span>{subtypeEmoji[post.data.subtype] || '📝'}</span>
+            </div>
+            <div class="feed-item-meta">
+              <span class="feed-author">dk.ai</span>
+              <span class="feed-time">{timeAgo(post.data.date)}</span>
+            </div>
+            {post.data.linkSource && (
+              <span class="feed-source">{post.data.linkSource}</span>
             )}
-            <div class="flex items-center gap-3 text-xs text-surface-200/70 font-mono">
-              <time datetime={post.data.date.toISOString()}>
-                {post.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </time>
-              {post.data.readingTime && (
-                <span>{post.data.readingTime} min read</span>
-              )}
+          </div>
+          <div class="feed-item-body">
+            <h3 class="feed-item-title">{post.data.title}</h3>
+          </div>
+          <div class="feed-item-footer">
+            <div class="feed-reactions">
+              <span class="feed-reaction">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                Read
+              </span>
+              <span class="feed-reaction">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                Source
+              </span>
             </div>
           </div>
         </a>
       ))}
     </div>
+
+    <a href="/daily" class="section-link">
+      View full feed
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
   </section>
 
-  <!-- Daily Section -->
-  <section>
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
-          <span class="w-1 h-6 bg-emerald-500 rounded-full inline-block"></span>
-          Daily
-        </h2>
-        <p class="text-sm text-surface-200 mt-1 ml-3">Quick takes, links, and things worth paying attention to.</p>
-      </div>
-      <a href="/daily" class="text-sm text-accent-DEFAULT hover:text-accent-hover transition-colors whitespace-nowrap">
-        View all &rarr;
-      </a>
+  <!-- ============================================ -->
+  <!-- MY STACK: Bento grid with visual interest    -->
+  <!-- ============================================ -->
+  <section class="section-stack">
+    <div class="section-label">
+      <span class="section-label-icon purple">03</span>
+      <span>My Stack</span>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {sortedDaily.map((post) => (
-        <a href={`/daily#${post.slug}`} class="glass card-hover block p-4 group">
-          <div class="flex items-center gap-2 mb-3">
-            <span class="text-base" title={subtypeLabels[post.data.subtype] || post.data.subtype}>
-              {subtypeEmoji[post.data.subtype] || '📝'}
-            </span>
-            <span class="text-xs font-mono text-surface-200">
-              {post.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </span>
+    <div class="bento-grid">
+      <!-- Claude: Large hero tile -->
+      <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="bento-tile bento-claude">
+        <div class="bento-glow"></div>
+        <div class="bento-tile-content">
+          <img src={faviconUrl("https://claude.ai")} alt="Claude" width="40" height="40" class="bento-logo" />
+          <div>
+            <h3 class="bento-name">Claude</h3>
+            <span class="bento-by">by Anthropic</span>
           </div>
-          <h3 class="text-sm font-medium text-white group-hover:text-accent-DEFAULT transition-colors mb-3 line-clamp-3">
-            {post.data.title}
-          </h3>
-          {post.data.linkSource && (
-            <span class="text-xs text-surface-200/60 font-mono truncate">{post.data.linkSource}</span>
-          )}
-        </a>
-      ))}
+        </div>
+        <p class="bento-desc">The centre of everything. Chat, Code, and Cowork running across my entire workflow.</p>
+        <div class="bento-pills">
+          <span>Chat</span>
+          <span>Code</span>
+          <span>Cowork</span>
+        </div>
+      </a>
+
+      <!-- Wispr Flow -->
+      <a href="https://wisprflow.ai" target="_blank" rel="noopener noreferrer" class="bento-tile bento-sm">
+        <img src={faviconUrl("https://wisprflow.ai")} alt="Wispr Flow" width="32" height="32" class="bento-logo" />
+        <h3 class="bento-name">Wispr Flow</h3>
+        <span class="bento-use">180 wpm dictation</span>
+      </a>
+
+      <!-- NotebookLM -->
+      <a href="https://notebooklm.google.com" target="_blank" rel="noopener noreferrer" class="bento-tile bento-sm">
+        <img src={faviconUrl("https://notebooklm.google.com")} alt="NotebookLM" width="32" height="32" class="bento-logo" />
+        <h3 class="bento-name">NotebookLM</h3>
+        <span class="bento-use">Research & synthesis</span>
+      </a>
+
+      <!-- Tech stack row -->
+      <div class="bento-tile bento-tech">
+        <div class="bento-tech-label">Tech Stack</div>
+        <div class="bento-tech-row">
+          {[
+            { name: "GitHub", url: "https://github.com" },
+            { name: "Vercel", url: "https://vercel.com" },
+            { name: "Figma", url: "https://figma.com" },
+            { name: "Supabase", url: "https://supabase.com" },
+            { name: "Astro", url: "https://astro.build" },
+            { name: "Warp", url: "https://warp.dev" },
+          ].map((tool) => (
+            <a href={tool.url} target="_blank" rel="noopener noreferrer" class="bento-tech-item" title={tool.name}>
+              <img src={faviconUrl(tool.url)} alt={tool.name} width="28" height="28" loading="lazy" />
+              <span>{tool.name}</span>
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
+
+    <a href="/stack" class="section-link">
+      View full stack
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
   </section>
+
 </BaseLayout>
+
+<style>
+  /* ============================================ */
+  /* NOISE TEXTURE                                */
+  /* ============================================ */
+  .noise-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  /* ============================================ */
+  /* HERO                                         */
+  /* ============================================ */
+  .hero-section {
+    position: relative;
+    padding: 4rem 0 5rem;
+    overflow: hidden;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 0.375rem 0.875rem;
+    border-radius: 999px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.5rem;
+  }
+
+  .hero-title-line {
+    display: block;
+    color: var(--text-primary);
+  }
+
+  .hero-title-line.accent {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-title-line.dim {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 0.45em;
+    letter-spacing: 0;
+    margin-top: 0.5rem;
+  }
+
+  .hero-sub {
+    font-size: 1.0625rem;
+    color: var(--text-secondary);
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  .hero-grid-accent {
+    position: absolute;
+    top: 0;
+    right: -5%;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(139,92,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+  }
+
+  .hero-orb-1 {
+    width: 300px;
+    height: 300px;
+    top: -50px;
+    right: 10%;
+    background: rgba(59,130,246,0.08);
+  }
+
+  .hero-orb-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -30px;
+    right: 30%;
+    background: rgba(139,92,246,0.06);
+  }
+
+  /* ============================================ */
+  /* SECTION LABELS                               */
+  /* ============================================ */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .section-label-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .section-label-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); }
+  .section-label-icon.green { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+  .section-label-icon.purple { background: rgba(139,92,246,0.1); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.2); }
+
+  .section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+  }
+
+  .section-link:hover {
+    color: var(--text-primary);
+    border-color: var(--border-color-hover);
+  }
+
+  /* ============================================ */
+  /* LONG READS                                   */
+  /* ============================================ */
+  .section-reads {
+    margin-bottom: 5rem;
+    position: relative;
+  }
+
+  /* Featured article */
+  .featured-card {
+    display: block;
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+  }
+
+  .featured-card:hover {
+    border-color: rgba(59,130,246,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .featured-image {
+    position: relative;
+    height: 320px;
+    overflow: hidden;
+  }
+
+  .featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+
+  .featured-card:hover .featured-image img {
+    transform: scale(1.03);
+  }
+
+  .featured-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--bg-primary) 0%, transparent 60%);
+  }
+
+  .featured-content {
+    padding: 0 2rem 2rem;
+    margin-top: -6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .featured-badge {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.625rem;
+    border-radius: 4px;
+    background: #3b82f6;
+    color: white;
+  }
+
+  .featured-time {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+
+  .featured-title {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.75rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .featured-excerpt {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 0 1rem;
+  }
+
+  .featured-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #3b82f6;
+    transition: gap 0.2s;
+  }
+
+  .featured-card:hover .featured-cta {
+    gap: 0.75rem;
+  }
+
+  /* Stacked reads */
+  .reads-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  .read-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+  }
+
+  .read-card:last-child {
+    border-bottom: none;
+  }
+
+  .read-card:hover {
+    background: var(--bg-card-hover);
+  }
+
+  .read-card-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--border-color);
+    min-width: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  .read-card:hover .read-card-number {
+    color: #3b82f6;
+  }
+
+  .read-card-thumb {
+    width: 80px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .read-card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .read-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .read-card-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem;
+    transition: color 0.2s;
+  }
+
+  .read-card:hover .read-card-title {
+    color: #3b82f6;
+  }
+
+  .read-card-excerpt {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .read-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.375rem;
+  }
+
+  .read-card-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+
+  /* ============================================ */
+  /* DAILY FEED                                   */
+  /* ============================================ */
+  .section-daily {
+    margin-bottom: 5rem;
+  }
+
+  .feed-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .feed-item {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    border-radius: 0.875rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feed-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .feed-item:hover::before {
+    opacity: 1;
+  }
+
+  .feed-item:hover {
+    border-color: var(--border-color-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  }
+
+  .feed-item-featured {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(16,185,129,0.04), rgba(59,130,246,0.04));
+    border-color: rgba(16,185,129,0.15);
+  }
+
+  .feed-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .feed-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  .feed-item-meta {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .feed-author {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .feed-time {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .feed-source {
+    font-size: 0.625rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    background: var(--bg-card-hover);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+  }
+
+  .feed-item-body {
+    flex: 1;
+    margin-bottom: 1rem;
+  }
+
+  .feed-item-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+    transition: color 0.2s;
+  }
+
+  .feed-item:hover .feed-item-title {
+    color: #10b981;
+  }
+
+  .feed-item-featured .feed-item-title {
+    font-size: 1.125rem;
+  }
+
+  .feed-item-footer {
+    display: flex;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .feed-reactions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .feed-reaction {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    transition: color 0.15s;
+  }
+
+  .feed-item:hover .feed-reaction {
+    color: var(--text-secondary);
+  }
+
+  /* ============================================ */
+  /* STACK: Bento grid                            */
+  /* ============================================ */
+  .section-stack {
+    margin-bottom: 3rem;
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 0.875rem;
+  }
+
+  .bento-tile {
+    position: relative;
+    border-radius: 0.875rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    text-decoration: none;
+    transition: all 0.25s;
+    overflow: hidden;
+  }
+
+  .bento-tile:hover {
+    border-color: var(--border-color-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  }
+
+  /* Claude: spans 2 cols */
+  .bento-claude {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(59,130,246,0.06));
+    border-color: rgba(139,92,246,0.12);
+  }
+
+  .bento-claude:hover {
+    border-color: rgba(139,92,246,0.3);
+    background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1));
+  }
+
+  .bento-glow {
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(139,92,246,0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  .bento-tile-content {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+  }
+
+  .bento-logo {
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .bento-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    transition: color 0.2s;
+  }
+
+  .bento-claude:hover .bento-name {
+    color: #8b5cf6;
+  }
+
+  .bento-by {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .bento-desc {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0 0 0.875rem;
+    position: relative;
+  }
+
+  .bento-pills {
+    display: flex;
+    gap: 0.375rem;
+    position: relative;
+  }
+
+  .bento-pills span {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    background: rgba(139,92,246,0.08);
+    color: #8b5cf6;
+    border: 1px solid rgba(139,92,246,0.15);
+  }
+
+  /* Small bento tiles */
+  .bento-sm {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+  }
+
+  .bento-sm .bento-name {
+    font-size: 0.9375rem;
+  }
+
+  .bento-sm:hover .bento-name {
+    color: #3b82f6;
+  }
+
+  .bento-use {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Tech row: spans full width */
+  .bento-tech {
+    grid-column: span 4;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .bento-tech-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.875rem;
+  }
+
+  .bento-tech-row {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: space-between;
+  }
+
+  .bento-tech-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    text-decoration: none;
+    transition: transform 0.15s;
+  }
+
+  .bento-tech-item:hover {
+    transform: scale(1.08);
+  }
+
+  .bento-tech-item img {
+    border-radius: 8px;
+  }
+
+  .bento-tech-item span {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ============================================ */
+  /* RESPONSIVE                                   */
+  /* ============================================ */
+  @media (max-width: 768px) {
+    .feed-container {
+      grid-template-columns: 1fr;
+    }
+    .feed-item-featured {
+      grid-column: span 1;
+    }
+    .bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .bento-claude {
+      grid-column: span 2;
+    }
+    .bento-tech {
+      grid-column: span 2;
+    }
+    .bento-tech-row {
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: flex-start;
+    }
+    .featured-image {
+      height: 220px;
+    }
+    .read-card-thumb {
+      display: none;
+    }
+  }
+</style>
