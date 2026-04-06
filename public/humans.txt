@@ -1,0 +1,22 @@
+/* TEAM */
+David Kenworthy
+Role: Writer, Builder, Tinkerer
+Title: VP of Product & Innovation, MMGY Global
+Location: Pemberton, BC, Canada
+Originally: Preston, UK
+Site: https://davidkenworthy.ai
+LinkedIn: https://www.linkedin.com/in/david-kenworthy-a6612250/
+Instagram: https://www.instagram.com/davidkenworthy
+Interests: AI strategy, mountain biking, skiing, snowmobiling, hunting
+
+/* SITE */
+Site: davidkenworthy.ai (dk.ai)
+Tagline: Push to main. Notes from the AI trenches. No staging environment.
+Last update: 2026/04/06
+Standards: HTML5, CSS3
+Software: Built with curiosity and Claude
+
+/* THANKS */
+Kaiya: For putting up with the late-night rabbit holes.
+The AI trenches: For never running out of things to write about.
+Coffee: Obviously.
